@@ -1,0 +1,146 @@
+#0.Assumption
+    Assuming each character in panel can only be used once
+
+#1.How to run code
+    $python scrabble.py board-given.txt
+
+#2.Concept
+    For each round, the score is sum of main word and other generated words based on the play.
+    The idea is to fill out main word in empty grid, and to check if generated words are valid(looking it up in the dictionary)
+    Finding all posible pairs and calculate the score of each, and choosing the maximum score among them.
+    The reason I choose it as it is a straight forward solution came to my mind. Defitinely it is brute-force and requires improvements.
+    I will list some suggestions how to improve it in the later section.
+    We will use "board_given.txt" as an example to demonstrate my concept. As we can see one possible 
+    solution is PLAY(main word) and smiley(generated word).I use uppercase for main word just for this demo.
+
+    #2-1.
+    Firstly, we get a word "PLAY" from panel and search empty grid. We found(13,0) is empty and 
+    in this location try to fill out this word horizontally and vertically. We found horizontal direction is 
+    not feasible due to it has no enough space while vertical one does. So we put the word vertically. See [Pic1]
+
+    #2-2.
+    In terms of main word ("PLAY"), we search vertically from its two ends "P" and "A", 
+    and to check if we have any ajacent characters to it. If we find it, concatenate it with the main word.
+    Similary, if we put the main word horizontally, we search in the horizontal direction to find adjacent characters.
+    Then we validate the new main word with a dictionary whether it is a valid word or not. See [Pic2]
+
+    #2-3.
+    After making up the main word, we search its neighbors to find other generated word.
+    for each character in main word, we search in its horizontal direction. Likewise, if the main word is put horizontally,
+    we search each character in vertical direction. If we find it, validate it if this is a valid new word.
+    In this case, we find "smiley" and it is a valid word. See [Pic3]
+
+                            |                       
+    -------------P-         P                   <-P->    |||| 
+    -------------L-         L    <-PLAY->       <-L->    PLAY       
+    -------------A-         A                   <-A->    ||||    
+    --------smileY-         Y                   <-Y->    
+    -----------a---         |                       
+    -----------u---         
+        [Pic1]                 [Pic2]              [Pic3]
+
+
+#3.Input/Output data
+    #3-1.Input data:
+        #board_given.txt: Checking grid is made up of only '-' and lowercase letters. The last line is panel and it
+                          is made up of only letters.
+        #dict.txt: Checking it is only lowercase letters and not an empty file.
+    
+    #3-2.output.txt: listing the maximum information(x,y,vertical,word).If no maximum,
+                     listing ("None","None","None","None")
+
+#4.Components
+    #4-1.Scrabble class: Mainly to working with game related tasks. Some key functions listed below.
+        #SetWords(): Based on the panel, generate possible valid words.
+        #FillWord(): Filling out the word to the empty grid.
+        #GetMainWord(): Expanding and make up the main word
+        #GetOtherWord():Expanding and make up other generated words.
+        #Play(): To give the higheset score information for each round.
+    #4-2.Utils class: Mainly to dealing with input and output data.
+
+#5.Enum 
+    #5-1.common.py: Mainly for enum and common components
+
+#6.Analysis
+    #6-1.Time complexity: assuming we have L possible words to try, the grid size is M*N(Row*Col),
+        and for each word it needs to expand horizontally and vertically(M+N).
+        The average time complexity is O(L*MN*(M+N)) 
+
+    #6-2.Space complexity: 
+        Assuming we have L possible words to try, and we have grid size M*N, and we have K words in dictionary.
+        The space complexity is O(L+MN+K)
+
+#7.Improvement and future work:
+#7-1.[Finish] 
+     Checking the current grid location has enough space for vertical and horizontal search.
+     If not, we go to next location and reduce computation
+
+#7-2.[Working progress] 
+     Currently I search in horizontal direction in 2 steps. Firstly I go to left direction,
+     and then go to right direction. Similary for vertical direction. It needs to be changed to 
+     traverse either left/right or up/down at the same time.
+
+#7-3.[Future work] 
+     In general rule of thumb, that is to generate one or more characters from panel and 
+     test if we can combine previous words with our chars to generate new words.
+     One example is "YPLAY" from panel, and we find it can be concatenated to a new word
+     "BYPLAY". See [Pic4]. In this example, we have around 7k chars from "panelyy" and the running time 
+     from my side is around 288 seconds. In terms of scalibility, I think it can be improved.
+     One potential solution is to use multi-threading programming or distributed system to accelerate my pipeline.
+     However, to addressing the root cause, the algorithm needs to be improved.  
+     One idea is instead of traversing the whole grid, we only traverse occupied grid.
+     We only traverse the occupied grid and use DFS search in its up/down/left/right direction to fill out 
+     main words. Taking [Pic5] as an example, I list each character and their potential locations below (See Table1).
+     Then based on it we can insert the chars from these locations. See [Pic6], assuming we have "y" from panel,
+     in this case we can form new words such as "smiley", "my" and calculate scores for them.
+     In this way, we can avoid waste steps and improve time performance. Moreoever, it is better to 
+     read some related papers, blogs to see any other better solutions.
+
+    s:left,down
+    m:down
+    i:down
+    l:None
+    e:right
+    a:left,down,right
+       [Table1]
+
+    --------smile--       --------smile--     --YsmileY---
+    -----------a---       -----------a---        YYYYY
+    -----------u---
+    -----------g-h-
+    -------birthday
+    -------Y-----p-
+    -------P-----p-
+    -------L-----y-
+    -------A-------
+    -------Y------
+        [Pic4]                 [Pic5]           [Pic6]
+
+#8.TestFiles
+    #8-1.board-given.txt: sample file
+    #8-2.board-given_empty.txt: empty board file
+    #8-3.board-given_full.txt: full board without empty location
+    #8-4.board-given_notValid.txt: containing non-valid character
+    #8-5.dict.txt:sample dictionary
+    #8-6.dict_empty.txt:empty dictionary file
+    #8-7.dict_notValid.txt: containing non-valid character.
+    #8-8.board_custom1.txt: test case
+    #8-9.board_custom2.txt: test case
+    #8-10.board_custom3.txt: test case
+    #8-11.board_custom4.txt: test case
+    #8-12.board_custom5.txt: test case
+    #8-13.board_custom6.txt: test case
+    #8-14.board_custom7.txt: test case  
+
+
+
+
+#9. following up improvements:
+    #iterate the empty grid near by existing words
+    #iterate horizon/vertical dirs at the same time
+    #check github to find other solutions
+
+
+    #anchor space: empty space to put SetWords
+    #Trie to improve space complexity.Either using trees or graphs.
+    #A dawg should be considered any time a search through a large lexicon is needed
